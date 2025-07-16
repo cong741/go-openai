@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"time"
+
+	"golang.org/x/time/rate"
 )
 
 // Chat message role defined by the OpenAI API.
@@ -18,6 +21,8 @@ const (
 )
 
 const chatCompletionsSuffix = "/chat/completions"
+
+var chatRateLimiter = rate.NewLimiter(rate.Every(10*time.Second), 3)
 
 var (
 	ErrChatCompletionInvalidModel       = errors.New("this model is not supported with this method, please use CreateCompletion client method instead") //nolint:lll
@@ -451,6 +456,13 @@ func (c *Client) CreateChatCompletion(
 	)
 	if err != nil {
 		return
+	}
+
+	if request.Model == "claude-4-sonnet" {
+		err = chatRateLimiter.Wait(ctx)
+		if err != nil {
+			return
+		}
 	}
 
 	err = c.sendRequest(req, &response)

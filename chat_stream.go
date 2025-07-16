@@ -3,6 +3,9 @@ package openai
 import (
 	"context"
 	"net/http"
+	"time"
+
+	"golang.org/x/time/rate"
 )
 
 type ChatCompletionStreamChoiceDelta struct {
@@ -18,6 +21,8 @@ type ChatCompletionStreamChoiceDelta struct {
 	// - https://api-docs.deepseek.com/api/create-chat-completion#responses
 	ReasoningContent string `json:"reasoning_content,omitempty"`
 }
+
+var chatStreamRateLimiter = rate.NewLimiter(rate.Every(10*time.Second), 3)
 
 type ChatCompletionStreamChoiceLogprobs struct {
 	Content []ChatCompletionTokenLogprob `json:"content,omitempty"`
@@ -99,6 +104,13 @@ func (c *Client) CreateChatCompletionStream(
 	)
 	if err != nil {
 		return nil, err
+	}
+
+	if request.Model == "claude-4-sonnet" {
+		err = chatStreamRateLimiter.Wait(ctx)
+		if err != nil {
+			return
+		}
 	}
 
 	resp, err := sendRequestStream[ChatCompletionStreamResponse](c, req)
