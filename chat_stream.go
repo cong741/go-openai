@@ -22,7 +22,7 @@ type ChatCompletionStreamChoiceDelta struct {
 	ReasoningContent string `json:"reasoning_content,omitempty"`
 }
 
-var chatStreamRateLimiter = rate.NewLimiter(rate.Every(10*time.Second), 3)
+var claude4StreamRateLimiter = rate.NewLimiter(rate.Every(10*time.Second), 1)
 
 type ChatCompletionStreamChoiceLogprobs struct {
 	Content []ChatCompletionTokenLogprob `json:"content,omitempty"`
@@ -107,7 +107,7 @@ func (c *Client) CreateChatCompletionStream(
 	}
 
 	if request.Model == "claude-4-sonnet" {
-		err = chatStreamRateLimiter.Wait(ctx)
+		err = claude4StreamRateLimiter.Wait(ctx)
 		if err != nil {
 			return
 		}

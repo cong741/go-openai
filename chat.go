@@ -22,7 +22,7 @@ const (
 
 const chatCompletionsSuffix = "/chat/completions"
 
-var chatRateLimiter = rate.NewLimiter(rate.Every(10*time.Second), 3)
+var claude4RateLimiter = rate.NewLimiter(rate.Every(10*time.Second), 1)
 
 var (
 	ErrChatCompletionInvalidModel       = errors.New("this model is not supported with this method, please use CreateCompletion client method instead") //nolint:lll
@@ -459,7 +459,7 @@ func (c *Client) CreateChatCompletion(
 	}
 
 	if request.Model == "claude-4-sonnet" {
-		err = chatRateLimiter.Wait(ctx)
+		err = claude4RateLimiter.Wait(ctx)
 		if err != nil {
 			return
 		}
