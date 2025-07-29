@@ -22,7 +22,7 @@ const (
 
 const chatCompletionsSuffix = "/chat/completions"
 
-var claude4RateLimiter = rate.NewLimiter(rate.Every(10*time.Second), 1)
+var claude4RateLimiter = rate.NewLimiter(rate.Every(15*time.Second), 1)
 
 var (
 	ErrChatCompletionInvalidModel       = errors.New("this model is not supported with this method, please use CreateCompletion client method instead") //nolint:lll
